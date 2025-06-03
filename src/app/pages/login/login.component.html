@@ -1,0 +1,15 @@
+<div class="login-container">
+  <form (ngSubmit)="onSubmit()" class="login-form">
+    <h2>Iniciar Sesión</h2>
+    <div class="form-group">
+      <input type="email" [(ngModel)]="email" name="email" placeholder="Correo electrónico" required>
+    </div>
+    <div class="form-group">
+      <input type="password" [(ngModel)]="password" name="password" placeholder="Contraseña" required>
+    </div>
+    <button type="submit">Iniciar Sesión</button> <button (click)="loginConGoogle()">
+      Iniciar sesión con Google
+    </button>
+    <p>¿No tienes una cuenta? <a routerLink="/register">Regístrate</a></p>
+  </form>
+</div>

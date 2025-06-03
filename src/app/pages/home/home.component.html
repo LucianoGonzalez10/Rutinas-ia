@@ -1,0 +1,23 @@
+<div class="home-container">
+  <h2>¡Bienvenido/a, {{ displayName }}!</h2>
+
+  <div *ngIf="formularioCompletado; else sinFormulario">
+    <p>Ya completaste tu formulario físico.</p>
+
+    <div *ngIf="rutina; else sinRutina">
+      <h3>Tu rutina generada por IA:</h3>
+      <p>{{ rutina }}</p>
+    </div>
+
+    <ng-template #sinRutina>
+      <p>Aún no se ha generado tu rutina.</p>
+    </ng-template>
+  </div>
+
+  <ng-template #sinFormulario>
+    <p>No completaste el formulario físico.</p>
+    <button routerLink="/formulario">Completar ahora</button>
+  </ng-template>
+
+  <button (click)="logout()">Cerrar sesión</button>
+</div>
