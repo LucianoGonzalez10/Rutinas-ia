@@ -1,0 +1,57 @@
+<form [formGroup]="datosForm" (ngSubmit)="guardarDatos()">
+    <label>Edad:</label>
+    <input type="number" formControlName="edad" />
+  
+    <label>Sexo:</label>
+    <select formControlName="sexo">
+      <option value="">Seleccionar</option>
+      <option value="Masculino">Masculino</option>
+      <option value="Femenino">Femenino</option>
+      <option value="Otro">Otro</option>
+    </select>
+  
+    <label>Altura (cm):</label>
+    <input type="number" formControlName="altura" />
+  
+    <label>Peso (kg):</label>
+    <input type="number" formControlName="peso" />
+  
+    <label>Nivel:</label>
+    <select formControlName="nivel">
+      <option value="">Seleccionar</option>
+      <option value="Principiante">Principiante</option>
+      <option value="Intermedio">Intermedio</option>
+      <option value="Avanzado">Avanzado</option>
+    </select>
+  
+    <label>Enfermedades o condiciones médicas:</label>
+    <input type="text" formControlName="enfermedades" placeholder="Ej: diabetes, hipertensión, ninguna..." />
+  
+    <label>Frecuencia semanal de entrenamiento:</label>
+    <input type="number" formControlName="frecuencia" min="1" max="7" placeholder="Días por semana (1-7)" />
+  
+    <label>Objetivo principal:</label>
+    <select formControlName="objetivo">
+      <option value="">Seleccionar</option>
+      <option value="Perder peso">Perder peso</option>
+      <option value="Ganar masa muscular">Ganar masa muscular</option>
+      <option value="Mantener salud">Mantener salud</option>
+      <option value="Otro">Otro</option>
+    </select>
+  
+    <label>Restricciones físicas o lesiones:</label>
+    <input type="text" formControlName="restricciones" placeholder="Ej: rodilla, espalda, ninguna..." />
+  
+    <label>Equipamiento disponible:</label>
+    <div formGroupName="equipamiento" class="equipamiento-group">
+      <label><input type="checkbox" formControlName="mancuernas" /> Mancuernas</label>
+      <label><input type="checkbox" formControlName="barra" /> Barra</label>
+      <label><input type="checkbox" formControlName="bandas" /> Bandas</label>
+      <label><input type="checkbox" formControlName="pesoCorporal" /> Solo peso corporal</label>
+    </div>
+  
+    <button type="submit">Guardar</button>
+  </form>
+  
+  <p>{{ mensaje }}</p>
+  

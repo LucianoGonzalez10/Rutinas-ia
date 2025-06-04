@@ -164,5 +164,32 @@ export class AuthService {
       return null;
     }
   }
+
+  // ✅ Guardar datos del formulario en Firestore
+async guardarFormulario(uid: string, tipo: string, datos: any): Promise<void> {
+  try {
+    const ref = doc(this.firestore, 'usuarios', uid);
+    const campo = `formulario${tipo}`; // ejemplo: formularioPrincipiante
+    await setDoc(ref, { [campo]: datos }, { merge: true });
+    console.log(`Datos del formulario "${tipo}" guardados exitosamente.`);
+  } catch (error) {
+    console.error(`Error al guardar formulario "${tipo}":`, error);
+    throw error;
+  }
+}
+
+// ✅ Consultar si un formulario ya fue completado
+async formularioCompletado(uid: string, tipo: string): Promise<boolean> {
+  try {
+    const ref = doc(this.firestore, 'usuarios', uid);
+    const snap = await getDoc(ref);
+    const data = snap.data();
+    return !!(data && data[`formulario${tipo}`]); // true si existe
+  } catch (error) {
+    console.error(`Error al verificar formulario "${tipo}":`, error);
+    return false;
+  }
+}
+
 }
 
