@@ -12,10 +12,11 @@ import { Router } from '@angular/router';
 })
 export class RegisterComponent {
   registerForm: FormGroup;
+  errorMessage: string = '';
+  successMessage: string = '';
+  isRegistering = false;
   passwordMismatch: boolean = false;
-  errorMessage: string | null = null;
   isLoading: boolean = false;
-  isSubmitting: boolean = false;
 
   constructor(
     private fb: FormBuilder, 
@@ -32,14 +33,15 @@ export class RegisterComponent {
   }
 
   async onSubmit() {
-    if (this.isSubmitting) {
+    if (this.isRegistering) {
       return; // Prevenir múltiples envíos
     }
 
     if (this.registerForm.valid) {
-      this.isSubmitting = true;
+      this.isRegistering = true;
       this.isLoading = true;
-      this.errorMessage = null;
+      this.errorMessage = '';
+      this.successMessage = '';
       this.passwordMismatch = false;
 
       const { nombre, apellido, email, password, confirmarPassword } = this.registerForm.value;
@@ -48,22 +50,28 @@ export class RegisterComponent {
         this.passwordMismatch = true;
         this.errorMessage = 'Las contraseñas no coinciden';
         this.isLoading = false;
-        this.isSubmitting = false;
+        this.isRegistering = false;
         return;
       }
   
       try {
-        await this.authService.register(email, password, nombre, apellido);
-        // La redirección se maneja en el servicio de autenticación
+        const userCredential = await this.authService.register(email, password, nombre, apellido);
+        const uid = userCredential.user.uid;
+
+        // Redirigir solo después de que todas las operaciones hayan intentado completarse
+        await this.router.navigate(['/home']);
       } catch (error: any) {
         console.error('Error en el registro:', error);
         this.errorMessage = error.message || 'Error al registrar usuario';
       } finally {
         this.isLoading = false;
-        this.isSubmitting = false;
+        this.isRegistering = false;
       }
     } else {
       this.errorMessage = 'Por favor, complete todos los campos correctamente';
     }
   }
+
+  // Aquí iría la función para subir el archivo a Storage (o en un servicio)
+  // async uploadFile(file: File): Promise<string> { /* ... */ }
 }

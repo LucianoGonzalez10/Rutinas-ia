@@ -3,13 +3,13 @@ import { LoginComponent } from './pages/login/login.component';
 import { RegisterComponent } from './pages/register/register.component';
 import { DashboardComponent } from './pages/dashboard/dashboard.component';
 import { HomeComponent } from './pages/home/home.component';
-import { Formulario } from './pages/formulario/formulario-datos.component';
+import { FormularioDatosComponent } from './pages/formulario/formulario-datos.component';
 
 export const routes: Routes = [
     { path: 'login', component: LoginComponent },
     { path: 'register', component: RegisterComponent },
     { path: 'dashboard', component: DashboardComponent },
     { path: 'home', component: HomeComponent },
-    { path: 'formulario', component: Formulario },
-    { path: '', redirectTo: '/home', pathMatch: 'full' }
+    { path: 'formulario', component: FormularioDatosComponent },
+    { path: '', redirectTo: '/login', pathMatch: 'full' }
 ];

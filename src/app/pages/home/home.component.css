@@ -1,0 +1,564 @@
+:host {
+  display: block;
+  min-height: 100vh;
+  width: 100vw;
+  background: linear-gradient(135deg, #1e2a3a 0%, #2c3e50 100%);
+  color: #ffffff;
+  font-family: 'Inter', 'Roboto', sans-serif;
+}
+
+.home-container {
+  padding: 2rem;
+  width: 100%;
+  min-height: 100vh;
+  color: #ffffff;
+  font-family: 'Inter', 'Roboto', sans-serif;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  text-align: center;
+  position: relative;
+}
+
+h2 {
+  color: #64b5f6;
+  font-weight: 700;
+  margin-bottom: 2.5rem;
+  font-size: 2.8rem;
+  text-shadow: 0 2px 10px rgba(100, 181, 246, 0.2);
+  letter-spacing: 1px;
+}
+
+h3 {
+  color: #64b5f6;
+  font-weight: 600;
+  margin-bottom: 2rem;
+  font-size: 2.2rem;
+  text-shadow: 0 2px 8px rgba(100, 181, 246, 0.2);
+}
+
+.top-buttons-container {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.formulario-status {
+  background: rgba(100, 181, 246, 0.1);
+  padding: 1.5rem;
+  border-radius: 16px;
+  margin: 2rem 0;
+  border: 1px solid rgba(100, 181, 246, 0.2);
+  font-size: 1.2rem;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 15px rgba(100, 181, 246, 0.1);
+  animation: fadeIn 0.5s ease-out;
+}
+
+.rutina-container {
+  background-color: rgba(255, 255, 255, 0.05);
+  padding: 35px;
+  border-radius: 12px;
+  margin: 30px 0;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  width: 90%;
+  max-width: 1000px;
+}
+
+.rutina-content {
+  background-color: rgba(255, 255, 255, 0.03);
+  padding: 35px;
+  border-radius: 8px;
+  border: 1px solid rgba(100, 181, 246, 0.1);
+}
+
+.rutina-content pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-family: 'JetBrains Mono', monospace;
+  line-height: 1.8;
+  color: #E0E0E0;
+  font-size: 1.1rem;
+}
+
+.loading-rutina {
+  text-align: center;
+  padding: 2.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 20px;
+  margin: 2rem 0;
+  border: 1px solid rgba(100, 181, 246, 0.2);
+  font-size: 1.2rem;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  animation: fadeIn 0.5s ease-out;
+}
+
+.loading-steps {
+  margin: 2rem 0;
+  text-align: left;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.loading-step {
+  margin: 1rem 0;
+  padding: 1rem 1.5rem;
+  background: rgba(100, 181, 246, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(100, 181, 246, 0.1);
+  animation: fadeIn 0.5s ease-in-out;
+  transition: transform 0.3s ease;
+}
+
+.loading-step:hover {
+  transform: translateX(10px);
+}
+
+.loading-step:nth-child(1) { animation-delay: 0s; }
+.loading-step:nth-child(2) { animation-delay: 0.5s; }
+.loading-step:nth-child(3) { animation-delay: 1s; }
+
+.error-message {
+  color: #ff6b6b;
+  margin: 1.5rem 0;
+  padding: 1.5rem;
+  background: rgba(255, 107, 107, 0.1);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 107, 107, 0.2);
+}
+
+.btn-retry {
+  background: linear-gradient(135deg, #64b5f6 0%, #1976d2 100%);
+  color: #ffffff;
+  margin-top: 1.5rem;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(100, 181, 246, 0.2);
+}
+
+.btn-retry:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(100, 181, 246, 0.3);
+}
+
+.loading-text {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1rem;
+  margin-top: 1.5rem;
+}
+
+.formulario-pendiente {
+  background: rgba(255, 107, 107, 0.1);
+  padding: 2rem;
+  border-radius: 20px;
+  margin: 2rem 0;
+  text-align: center;
+  border: 1px solid rgba(255, 107, 107, 0.2);
+  font-size: 1.2rem;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(255, 107, 107, 0.1);
+  animation: fadeIn 0.5s ease-out;
+}
+
+button {
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  min-width: 200px;
+}
+
+.btn-completar {
+  background: linear-gradient(135deg, #64b5f6 0%, #1976d2 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 15px rgba(100, 181, 246, 0.2);
+}
+
+.btn-completar:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(100, 181, 246, 0.3);
+}
+
+.btn-logout {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ff4757 100%);
+  color: white;
+  margin-top: 2rem;
+  box-shadow: 0 4px 15px rgba(255, 107, 107, 0.2);
+}
+
+.btn-logout:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(255, 107, 107, 0.3);
+}
+
+.checkbox-completado {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  accent-color: #64b5f6;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 2px solid #64b5f6;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.checkbox-completado:checked {
+  background-color: #64b5f6;
+  box-shadow: 0 0 10px rgba(100, 181, 246, 0.3);
+}
+
+.checkbox-completado:hover {
+  transform: scale(1.1);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+.loading-rutina p {
+  animation: pulse 2s infinite;
+}
+
+.tabla-rutina {
+  width: 100%;
+  max-width: 1200px;
+  margin: 2rem auto;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  animation: fadeIn 0.5s ease-out;
+}
+
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  color: #fff;
+  font-size: 1.1rem;
+  background: transparent;
+}
+
+th, td {
+  border: 1px solid rgba(100, 181, 246, 0.2);
+  padding: 1.2rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  background: rgba(100, 181, 246, 0.1);
+  color: #64b5f6;
+  font-size: 1.2rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+}
+
+tr:nth-child(even) td {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+tr:hover td {
+  background: rgba(100, 181, 246, 0.05);
+  transition: background 0.3s ease;
+}
+
+ul {
+  margin: 0;
+  padding-left: 1.2rem;
+  list-style-type: none;
+}
+
+li {
+  margin-bottom: 1rem;
+  line-height: 1.6;
+  position: relative;
+  padding-left: 1.5rem;
+}
+
+li:before {
+  content: "•";
+  color: #64b5f6;
+  position: absolute;
+  left: 0;
+  font-size: 1.2rem;
+}
+
+b {
+  color: #64b5f6;
+  font-weight: 600;
+}
+
+i {
+  color: #90caf9;
+  font-size: 0.95em;
+  font-style: italic;
+}
+
+@media (max-width: 768px) {
+  .home-container {
+    padding: 1rem;
+  }
+
+  h2 {
+    font-size: 2rem;
+  }
+
+  h3 {
+    font-size: 1.8rem;
+  }
+
+  .tabla-rutina {
+    padding: 1rem;
+    margin: 1rem 0;
+  }
+
+  table, th, td {
+    font-size: 0.95rem;
+  }
+
+  th, td {
+    padding: 0.8rem;
+  }
+
+  button {
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+  }
+}
+
+.btn-ver-formulario {
+  background: linear-gradient(135deg, #64b5f6 0%, #1976d2 100%);
+  color: #ffffff;
+  margin: 1rem 0;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(100, 181, 246, 0.2);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-ver-formulario:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(100, 181, 246, 0.3);
+}
+
+.btn-ver-formulario i {
+  font-size: 1.2rem;
+}
+
+/* User Menu Styles */
+.user-menu-container {
+  position: absolute; /* Posicionar absolutamente */
+  top: 1rem; /* Separación del borde superior */
+  right: 1rem; /* Separación del borde derecho */
+  z-index: 1010; /* Asegurar que esté por encima de otros elementos */
+}
+
+.user-icon-button {
+  background: rgba(100, 181, 246, 0.1); /* Fondo sutil */
+  border: 1px solid rgba(100, 181, 246, 0.2); /* Borde sutil */
+  padding: 0;
+  cursor: pointer;
+  width: 40px; /* Ajustar tamaño del icono/imagen */
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3); /* Sombra más pronunciada */
+}
+
+.user-icon-button i {
+  font-size: 24px; /* Ajustar tamaño del ícono por defecto */
+  color: #64b5f6; /* Color del ícono por defecto */
+}
+
+.user-icon-button img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.user-icon-button:hover {
+  transform: scale(1.05); /* Efecto hover */
+  background: rgba(100, 181, 246, 0.2); /* Fondo más visible en hover */
+  border-color: rgba(100, 181, 246, 0.4); /* Borde más visible en hover */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); /* Sombra más pronunciada en hover */
+}
+
+.user-menu {
+  position: absolute;
+  top: 55px; /* Espacio debajo del botón del icono */
+  right: 0;
+  background: #2c3e50; /* Color de fondo del menú */
+  border-radius: 12px; /* Bordes redondeados */
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4); /* Sombra más pronunciada */
+  backdrop-filter: blur(10px); /* Efecto de desenfoque */
+  border: 1px solid rgba(255, 255, 255, 0.15); /* Borde más definido */
+  overflow: hidden; /* Asegurar que el contenido respete los bordes redondeados */
+  animation: fadeIn 0.3s ease-out; /* Animación de aparición */
+  width: 220px; /* Ancho del menú ligeramente menor */
+  color: #e0e0e0; /* Color de texto general del menú */
+  padding: 0.5rem 0; /* Padding interno */
+}
+
+.user-info {
+  padding: 0.8rem 1rem; /* Ajustar padding */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Separador */
+  margin-bottom: 0.5rem; /* Espacio después del info */
+  display: flex; /* Usar flexbox para alinear imagen/icono y texto */
+  align-items: center; /* Centrar verticalmente los elementos */
+}
+
+.user-info p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7); /* Color de texto del email */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex-grow: 1; /* Permite que el texto ocupe el espacio restante */
+}
+
+.menu-options {
+  padding: 0;
+}
+
+.user-menu button {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 0.6rem 1rem; /* Ajustar padding */
+  background: none;
+  border: none;
+  color: #e0e0e0;
+  text-align: left;
+  font-size: 0.95rem; /* Tamaño de fuente ligeramente menor */
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+  min-width: auto; /* Anular min-width anterior */
+  border-radius: 0; /* Eliminar border-radius para los ítems del menú */
+  text-transform: none; /* Eliminar uppercase */
+  letter-spacing: normal; /* Eliminar letter-spacing */
+}
+
+.user-menu button:hover {
+  background: rgba(100, 181, 246, 0.15); /* Efecto hover más sutil */
+  color: #ffffff;
+}
+
+.user-menu button i {
+  margin-right: 10px; /* Espacio entre icono y texto */
+  font-size: 1rem; /* Tamaño del icono */
+  color: rgba(224, 224, 224, 0.7); /* Color del icono */
+}
+
+.user-menu button:hover i {
+  color: #ffffff;
+}
+
+.user-menu hr {
+  border: none;
+  height: 1px;
+  background-color: rgba(255, 255, 255, 0.1); /* Estilo del separador */
+  margin: 0.5rem 0;
+}
+
+/* Ajustar estilos para el botón de logout en el menú */
+.user-menu .btn-logout {
+    background: none; /* Asegurar que no tenga fondo degradado */
+    box-shadow: none; /* Asegurar que no tenga sombra */
+    color: #ff6b6b; /* Color de texto de cerrar sesión */
+    margin-top: 0.5rem; /* Espacio antes del botón de logout */
+    border-top: 1px solid rgba(255, 255, 255, 0.1); /* Separador superior */
+    padding-top: 0.8rem;
+    padding-bottom: 0.8rem;
+}
+
+.user-menu .btn-logout:hover {
+    background-color: rgba(255, 107, 107, 0.15); /* Efecto hover para cerrar sesión */
+    color: #ff4757;
+}
+
+.user-menu .btn-logout i {
+    color: rgba(255, 107, 107, 0.8); /* Color del icono de cerrar sesión */
+}
+
+.user-menu .btn-logout:hover i {
+    color: #ff4757;
+}
+
+.menu-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.menu-button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.menu-button i {
+  font-size: 1.2em;
+}
+
+.menu-button .user-email {
+  font-size: 0.9em;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.menu-button .fa-chevron-down {
+  font-size: 0.8em;
+  transition: transform 0.3s ease;
+}
+
+.menu-button:hover .fa-chevron-down {
+  transform: translateY(2px);
+}

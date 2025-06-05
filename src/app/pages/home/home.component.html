@@ -1,84 +1,108 @@
 <div class="home-container">
-  <h2>¡Bienvenido/a, {{ displayName }}!</h2>
+  <!-- Main content area -->
+  <div class="main-content">
+    <h1>Bienvenido, {{ userData?.nombre }} {{ userData?.apellido }}</h1>
 
-  <!-- Dashboard de días completados -->
-  <app-grafico-dias-completados 
-    [completedDays]="completedDays"
-    (completedDaysChange)="updateCompletedDays($event)">
-  </app-grafico-dias-completados>
+    <!-- Contenedor del icono/foto de usuario y menú desplegable -->
+    <div class="user-menu-container">
+      <button class="menu-button" (click)="toggleMenuUsuario()">
+        <span class="user-email">{{ userData?.email }}</span>
+        <i class="fas fa-chevron-down"></i>
+      </button>
 
-  <div *ngIf="formularioCompletado; else sinFormulario">
-    <div class="formulario-status">
-      <p>✅ Formulario físico completado</p>
-    </div>
-
-    <!-- Contenido de la rutina o mensajes -->
-    <div *ngIf="rutinaEstructurada && rutinaEstructurada.length > 0; else cargandoORutinaTexto">
-      <!-- Tabla de la rutina -->
-      <div class="tabla-rutina">
-        <h3>Tu Rutina Personalizada</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Día</th>
-              <th>Enfoque</th>
-              <th>Ejercicios</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let dia of rutinaEstructurada">
-              <td>{{ dia.dia }}</td>
-              <td>
-                {{ dia.enfoque ? dia.enfoque : (dia.dia && dia.dia.includes(' - ') ? dia.dia.split(' - ')[1] : '-') }}
-              </td>
-              <td>
-                <ul>
-                  <li *ngFor="let ej of dia.ejercicios">
-                    <b>{{ ej.nombre }}</b>
-                    <span *ngIf="ej.series"> - Series: {{ ej.series }}</span>
-                    <span *ngIf="ej.repeticiones">, Reps: {{ ej.repeticiones }}</span>
-                    <span *ngIf="ej.descanso">, Descanso: {{ ej.descanso }}</span>
-                    <span *ngIf="ej.notas"><br><i>Notas: {{ ej.notas }}</i></span>
-                  </li>
-                </ul>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-    
-    <ng-template #cargandoORutinaTexto>
-      <div *ngIf="generandoRutina" class="loading-rutina">
-        <p>⏳ Generando tu rutina personalizada...</p>
-        <div class="loading-steps">
-          <p class="loading-step">1. Analizando tus datos físicos</p>
-          <p class="loading-step">2. Creando ejercicios personalizados</p>
-          <p class="loading-step">3. Optimizando la rutina para tus objetivos</p>
+      <div *ngIf="mostrarMenuUsuario" class="user-menu">
+        <div class="user-info">
+          <p>{{ userData?.email }}</p>
         </div>
-        <p class="loading-text">Esto puede tomar unos momentos</p>
+        <div class="menu-options">
+          <button (click)="verFormulario()">
+            <i class="fas fa-edit"></i>
+            Ver/Editar Formulario Físico
+          </button>
+          <hr>
+          <button><i class="fas fa-cog"></i> Configuración</button>
+          <hr>
+          <button><i class="fas fa-question-circle"></i> Ayuda y preguntas frecuentes</button>
+          <button><i class="fas fa-file-alt"></i> Notas de la versión</button>
+          <button><i class="fas fa-scroll"></i> Términos y políticas</button>
+          <hr>
+          <button (click)="logout()">
+            <i class="fas fa-sign-out-alt"></i>
+            Cerrar Sesión
+          </button>
+        </div>
       </div>
-      <div *ngIf="errorGeneracion" class="loading-rutina error-message">
-         <p>❌ {{ errorGeneracion }}</p>
-         <button class="btn-retry" (click)="ngOnInit()">Reintentar</button>
-      </div>
-      <!-- Mostrar JSON solo si no se está generando y no hay error -->
-      <div *ngIf="!generandoRutina && !errorGeneracion && rutina" class="rutina-content">
-        <pre>{{ rutina | json }}</pre>
-      </div>
-      <div *ngIf="!generandoRutina && !errorGeneracion && !rutina && formularioCompletado" class="rutina-content">
-         <p>No hay rutina generada aún.</p>
-      </div>
-    </ng-template>
-
-  </div>
-
-  <ng-template #sinFormulario>
-    <div class="formulario-pendiente">
-      <p>❌ Aún no has completado el formulario físico</p>
-      <button class="btn-completar" routerLink="/formulario">Completar ahora</button>
     </div>
-  </ng-template>
 
-  <button class="btn-logout" (click)="logout()">Cerrar sesión</button>
+    <div *ngIf="generandoRutina" class="loading-rutina">
+      <h3>Generando tu rutina personalizada...</h3>
+      <div class="loading-steps">
+        <div class="loading-step">
+          <p>Analizando tus datos físicos</p>
+        </div>
+        <div class="loading-step">
+          <p>Diseñando ejercicios específicos</p>
+        </div>
+        <div class="loading-step">
+          <p>Optimizando la rutina para tus objetivos</p>
+        </div>
+      </div>
+      <p class="loading-text">Esto puede tomar unos momentos...</p>
+    </div>
+
+    <div *ngIf="errorGeneracion" class="error-message">
+      {{ errorGeneracion }}
+      <button class="btn-retry" (click)="generarRutina()">Reintentar</button>
+    </div>
+
+    <div *ngIf="!formularioCompletado" class="formulario-pendiente">
+      <h3>¡Completa tu formulario físico!</h3>
+      <p>Para generar tu rutina personalizada, necesitamos conocer algunos datos sobre tu condición física.</p>
+      <button class="btn-completar" [routerLink]="['/formulario']">Completar Formulario</button>
+    </div>
+
+    <div *ngIf="rutinaEstructurada.length > 0" class="tabla-rutina">
+      <h3>Tu Rutina Semanal</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Día</th>
+            <th>Enfoque</th>
+            <th>Ejercicios</th>
+            <th>Completado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let dia of rutinaEstructurada">
+            <td><b>{{ dia.dia }}</b></td>
+            <td><i>{{ dia.enfoque }}</i></td>
+            <td>
+              <ul>
+                <li *ngFor="let ejercicio of dia.ejercicios">
+                  <b>{{ ejercicio.nombre }}</b>
+                  <ng-container *ngIf="ejercicio.series">
+                    - {{ ejercicio.series }} series
+                  </ng-container>
+                  <ng-container *ngIf="ejercicio.repeticiones">
+                    de {{ ejercicio.repeticiones }} repeticiones
+                  </ng-container>
+                  <ng-container *ngIf="ejercicio.descanso">
+                    ({{ ejercicio.descanso }} de descanso)
+                  </ng-container>
+                </li>
+              </ul>
+            </td>
+            <td>
+              <input
+                type="checkbox"
+                class="checkbox-completado"
+                [checked]="completedDays[dia.dia]"
+                (change)="toggleDiaCompletado(dia.dia)"
+              >
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 </div>

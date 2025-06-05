@@ -1,57 +1,117 @@
-<form [formGroup]="datosForm" (ngSubmit)="guardarDatos()">
-    <label>Edad:</label>
-    <input type="number" formControlName="edad" />
-  
-    <label>Sexo:</label>
-    <select formControlName="sexo">
-      <option value="">Seleccionar</option>
-      <option value="Masculino">Masculino</option>
-      <option value="Femenino">Femenino</option>
-      <option value="Otro">Otro</option>
-    </select>
-  
-    <label>Altura (cm):</label>
-    <input type="number" formControlName="altura" />
-  
-    <label>Peso (kg):</label>
-    <input type="number" formControlName="peso" />
-  
-    <label>Nivel:</label>
-    <select formControlName="nivel">
-      <option value="">Seleccionar</option>
-      <option value="Principiante">Principiante</option>
-      <option value="Intermedio">Intermedio</option>
-      <option value="Avanzado">Avanzado</option>
-    </select>
-  
-    <label>Enfermedades o condiciones médicas:</label>
-    <input type="text" formControlName="enfermedades" placeholder="Ej: diabetes, hipertensión, ninguna..." />
-  
-    <label>Frecuencia semanal de entrenamiento:</label>
-    <input type="number" formControlName="frecuencia" min="1" max="7" placeholder="Días por semana (1-7)" />
-  
-    <label>Objetivo principal:</label>
-    <select formControlName="objetivo">
-      <option value="">Seleccionar</option>
-      <option value="Perder peso">Perder peso</option>
-      <option value="Ganar masa muscular">Ganar masa muscular</option>
-      <option value="Mantener salud">Mantener salud</option>
-      <option value="Otro">Otro</option>
-    </select>
-  
-    <label>Restricciones físicas o lesiones:</label>
-    <input type="text" formControlName="restricciones" placeholder="Ej: rodilla, espalda, ninguna..." />
-  
-    <label>Equipamiento disponible:</label>
-    <div formGroupName="equipamiento" class="equipamiento-group">
-      <label><input type="checkbox" formControlName="mancuernas" /> Mancuernas</label>
-      <label><input type="checkbox" formControlName="barra" /> Barra</label>
-      <label><input type="checkbox" formControlName="bandas" /> Bandas</label>
-      <label><input type="checkbox" formControlName="pesoCorporal" /> Solo peso corporal</label>
+<div class="formulario-container">
+  <div class="formulario-header">
+    <h2>Formulario Físico</h2>
+    <p class="formulario-subtitle">Completa tus datos para personalizar tu rutina de entrenamiento</p>
+  </div>
+
+  <form (ngSubmit)="onSubmit()" class="formulario-content">
+    <div class="form-section">
+      <h3>Datos Personales</h3>
+      <div class="form-group">
+        <label for="nombre">Nombre</label>
+        <input type="text" id="nombre" [(ngModel)]="nombre" name="nombre" required>
+      </div>
+
+      <div class="form-group">
+        <label for="apellido">Apellido</label>
+        <input type="text" id="apellido" [(ngModel)]="apellido" name="apellido" required>
+      </div>
+
+      <div class="form-group">
+        <label for="genero">Género</label>
+        <select id="genero" [(ngModel)]="genero" name="genero" required>
+          <option value="">Selecciona tu género</option>
+          <option value="masculino">Masculino</option>
+          <option value="femenino">Femenino</option>
+          <option value="otro">Otro</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="fechaNacimiento">Fecha de Nacimiento</label>
+        <input type="date" id="fechaNacimiento" [(ngModel)]="fechaNacimiento" name="fechaNacimiento">
+      </div>
     </div>
-  
-    <button type="submit">Guardar</button>
+
+    <div class="form-section">
+      <h3>Medidas Físicas</h3>
+      <div class="form-group">
+        <label for="edad">Edad</label>
+        <input type="number" id="edad" [(ngModel)]="edad" name="edad" min="15" max="100" required>
+      </div>
+
+      <div class="form-group">
+        <label for="altura">Altura (cm)</label>
+        <input type="number" id="altura" [(ngModel)]="altura" name="altura" min="100" max="250" required>
+      </div>
+
+      <div class="form-group">
+        <label for="peso">Peso (kg)</label>
+        <input type="number" id="peso" [(ngModel)]="peso" name="peso" min="30" max="300" required>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h3>Objetivos y Preferencias</h3>
+      <div class="form-group">
+        <label for="nivelActividad">Nivel de Actividad</label>
+        <select id="nivelActividad" [(ngModel)]="nivelActividad" name="nivelActividad" required>
+          <option value="">Selecciona tu nivel</option>
+          <option value="principiante">Principiante</option>
+          <option value="intermedio">Intermedio</option>
+          <option value="avanzado">Avanzado</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="objetivo">Objetivo principal</label>
+        <select id="objetivo" [(ngModel)]="objetivo" name="objetivo" required>
+          <option value="">Selecciona tu objetivo</option>
+          <option value="perdida_peso">Pérdida de peso</option>
+          <option value="ganancia_musculo">Ganancia de músculo</option>
+          <option value="fuerza">Aumentar fuerza</option>
+          <option value="resistencia">Mejorar resistencia</option>
+          <option value="salud">Mantener salud</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="diasEntrenamiento">Días de entrenamiento por semana</label>
+        <input type="number" id="diasEntrenamiento" [(ngModel)]="diasEntrenamiento" name="diasEntrenamiento" min="1" max="7" required>
+      </div>
+
+      <div class="form-group">
+        <label for="tipoRutina">Tipo de rutina preferida</label>
+        <select id="tipoRutina" [(ngModel)]="tipoRutina" name="tipoRutina" required>
+          <option value="">Selecciona el tipo de rutina</option>
+          <option value="fuerza">Fuerza</option>
+          <option value="hipertrofia">Hipertrofia</option>
+          <option value="resistencia">Resistencia</option>
+          <option value="mixta">Mixta</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h3>Información Adicional</h3>
+      <div class="form-group">
+        <label for="equipamiento">Equipamiento disponible</label>
+        <input type="text" id="equipamiento" [(ngModel)]="equipamiento" name="equipamiento" placeholder="Describe el equipamiento que tienes disponible">
+      </div>
+
+      <div class="form-group">
+        <label for="lesiones">Lesiones o condiciones médicas</label>
+        <input type="text" id="lesiones" [(ngModel)]="lesiones" name="lesiones" placeholder="Describe cualquier lesión o condición médica relevante">
+      </div>
+
+      <div class="form-group">
+        <label for="enfermedades">Enfermedades importantes</label>
+        <input type="text" id="enfermedades" [(ngModel)]="enfermedades" name="enfermedades" placeholder="Describe cualquier enfermedad relevante">
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn-guardar">Guardar Datos</button>
+    </div>
   </form>
-  
-  <p>{{ mensaje }}</p>
-  
+</div>

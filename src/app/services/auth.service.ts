@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import {
   Auth,
   signInWithEmailAndPassword,
@@ -8,28 +8,30 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
   User,
-  updateProfile
+  updateProfile,
+  onAuthStateChanged,
+  UserCredential
 } from '@angular/fire/auth';
-import { Firestore, doc, setDoc, getDoc } from '@angular/fire/firestore';
-import { Observable } from 'rxjs';
+import { Firestore, doc, setDoc, getDoc, collection } from '@angular/fire/firestore';
+import { from, Observable, switchMap, of } from 'rxjs';
 import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
+  private auth: Auth = inject(Auth);
+  private firestore: Firestore = inject(Firestore);
+  private router: Router = inject(Router);
+
   user$: Observable<User | null>;
 
-  constructor(
-    private auth: Auth,
-    private firestore: Firestore,
-    private router: Router
-  ) {
+  constructor() {
     this.user$ = authState(this.auth); // Observador de usuario actual
   }
 
   // 🔐 Registrar usuario y guardar nombre/apellido
-  async register(email: string, password: string, nombre: string, apellido: string) {
+  async register(email: string, password: string, nombre: string, apellido: string): Promise<UserCredential> {
     try {
       console.log('Iniciando registro de usuario...');
       const userCredential = await createUserWithEmailAndPassword(this.auth, email, password);
@@ -50,7 +52,7 @@ export class AuthService {
       
       try {
         const userRef = doc(this.firestore, 'usuarios', uid);
-        const userData = {
+        const userData: any = {
           nombre,
           apellido,
           email,
@@ -63,22 +65,25 @@ export class AuthService {
         console.log('Datos guardados exitosamente en Firestore');
       } catch (firestoreError: any) {
         console.error('❌ Error al guardar en Firestore:', firestoreError.code, firestoreError.message);
+        // Considerar si quieres que falle todo el registro si falla guardar en Firestore
+        // Por ahora, solo logeamos el error.
       }
       
       
       // Forzar una actualización del usuario actual
       await this.auth.currentUser?.reload();
       
-      // Asegurarse de que el usuario esté autenticado
+      // Asegurarse de que el usuario esté autenticado y redirigir
       if (this.auth.currentUser) {
         console.log('Usuario autenticado después del registro');
-        await this.router.navigate(['/home']);
+        // await this.router.navigate(['/home']); // Eliminar redirección aquí
       } else {
         console.error('Error: Usuario no autenticado después del registro');
+        // Dependiendo del flujo, podrías redirigir a login o mostrar un error más grave.
         throw new Error('Error al autenticar usuario después del registro');
       }
       
-      return userCredential;
+      return userCredential; // Devolver el userCredential si todo fue bien
     } catch (error: any) {
       console.error('Error completo en el registro:', error);
       
@@ -95,11 +100,9 @@ export class AuthService {
   }
 
   // 🔓 Iniciar sesión
-  async login(email: string, password: string) {
+  async login(email: string, password: string): Promise<UserCredential> {
     try {
-      const userCredential = await signInWithEmailAndPassword(this.auth, email, password);
-      await this.router.navigate(['/home']);
-      return userCredential;
+      return await signInWithEmailAndPassword(this.auth, email, password);
     } catch (error) {
       throw error;
     }
@@ -166,30 +169,29 @@ export class AuthService {
   }
 
   // ✅ Guardar datos del formulario en Firestore
-async guardarFormulario(uid: string, tipo: string, datos: any): Promise<void> {
-  try {
-    const ref = doc(this.firestore, 'usuarios', uid);
-    const campo = `formulario${tipo}`; // ejemplo: formularioPrincipiante
-    await setDoc(ref, { [campo]: datos }, { merge: true });
-    console.log(`Datos del formulario "${tipo}" guardados exitosamente.`);
-  } catch (error) {
-    console.error(`Error al guardar formulario "${tipo}":`, error);
-    throw error;
+  async guardarFormulario(uid: string, tipo: string, datos: any): Promise<void> {
+    try {
+      const ref = doc(this.firestore, 'usuarios', uid);
+      const campo = `formulario${tipo}`; // ejemplo: formularioPrincipiante
+      await setDoc(ref, { [campo]: datos }, { merge: true });
+      console.log(`Datos del formulario "${tipo}" guardados exitosamente.`);
+    } catch (error) {
+      console.error(`Error al guardar formulario "${tipo}":`, error);
+      throw error;
+    }
   }
-}
 
-// ✅ Consultar si un formulario ya fue completado
-async formularioCompletado(uid: string, tipo: string): Promise<boolean> {
-  try {
-    const ref = doc(this.firestore, 'usuarios', uid);
-    const snap = await getDoc(ref);
-    const data = snap.data();
-    return !!(data && data[`formulario${tipo}`]); // true si existe
-  } catch (error) {
-    console.error(`Error al verificar formulario "${tipo}":`, error);
-    return false;
+  // ✅ Consultar si un formulario ya fue completado
+  async formularioCompletado(uid: string, tipo: string): Promise<boolean> {
+    try {
+      const ref = doc(this.firestore, 'usuarios', uid);
+      const snap = await getDoc(ref);
+      const data = snap.data();
+      return !!(data && data[`formulario${tipo}`]); // true si existe
+    } catch (error) {
+      console.error(`Error al verificar formulario "${tipo}":`, error);
+      return false;
+    }
   }
-}
-
 }
 
