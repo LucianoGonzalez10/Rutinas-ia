@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -12,11 +12,10 @@ import { Router } from '@angular/router';
 })
 export class RegisterComponent {
   registerForm: FormGroup;
-  errorMessage: string = '';
-  successMessage: string = '';
-  isRegistering = false;
   passwordMismatch: boolean = false;
+  errorMessage: string | null = null;
   isLoading: boolean = false;
+  isSubmitting: boolean = false;
 
   constructor(
     private fb: FormBuilder, 
@@ -27,21 +26,29 @@ export class RegisterComponent {
       nombre: ['', Validators.required],
       apellido: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
-      confirmarPassword: ['', Validators.required]
+      password: ['', [Validators.required, Validators.minLength(8), this.containsUppercase]],
+      confirmarPassword: ['', Validators.required],
+      aceptaTerminos: [false, Validators.requiredTrue]
     });
   }
 
+  private containsUppercase(control: AbstractControl): ValidationErrors | null {
+    const value = control.value;
+    if (value && !/[A-Z]/.test(value)) {
+      return { noUppercase: true };
+    }
+    return null;
+  }
+
   async onSubmit() {
-    if (this.isRegistering) {
+    if (this.isSubmitting) {
       return; // Prevenir múltiples envíos
     }
 
     if (this.registerForm.valid) {
-      this.isRegistering = true;
+      this.isSubmitting = true;
       this.isLoading = true;
-      this.errorMessage = '';
-      this.successMessage = '';
+      this.errorMessage = null;
       this.passwordMismatch = false;
 
       const { nombre, apellido, email, password, confirmarPassword } = this.registerForm.value;
@@ -50,28 +57,29 @@ export class RegisterComponent {
         this.passwordMismatch = true;
         this.errorMessage = 'Las contraseñas no coinciden';
         this.isLoading = false;
-        this.isRegistering = false;
+        this.isSubmitting = false;
         return;
       }
   
       try {
-        const userCredential = await this.authService.register(email, password, nombre, apellido);
-        const uid = userCredential.user.uid;
-
-        // Redirigir solo después de que todas las operaciones hayan intentado completarse
-        await this.router.navigate(['/home']);
+        await this.authService.register(email, password, nombre, apellido);
+        // La redirección se maneja en el servicio de autenticación
       } catch (error: any) {
         console.error('Error en el registro:', error);
         this.errorMessage = error.message || 'Error al registrar usuario';
       } finally {
         this.isLoading = false;
-        this.isRegistering = false;
+        this.isSubmitting = false;
       }
     } else {
       this.errorMessage = 'Por favor, complete todos los campos correctamente';
     }
   }
 
-  // Aquí iría la función para subir el archivo a Storage (o en un servicio)
-  // async uploadFile(file: File): Promise<string> { /* ... */ }
+  // Método para navegar a la página de Términos y Políticas
+  navigateToTerms(event: Event): void {
+    event.preventDefault(); // Evitar la acción por defecto del enlace
+    // Abre la página de términos en una nueva pestaña
+    window.open('/terminos-politicas', '_blank');
+  }
 }

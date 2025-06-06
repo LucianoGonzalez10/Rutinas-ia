@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
-import { user, User } from '@angular/fire/auth';
+import { User } from '@angular/fire/auth';
 import { Subscription } from 'rxjs';
 import { FormularioDatosComponent } from '../formulario/formulario-datos.component';
 import { Firestore, doc, getDoc, updateDoc, setDoc } from '@angular/fire/firestore';
@@ -18,6 +18,29 @@ import { Router } from '@angular/router';
   imports: [CommonModule, FormularioDatosComponent, RouterModule, FormsModule],
   templateUrl: './home.component.html',
   styles: [`
+    .botones-secundarios {
+  display: flex;
+  gap: 1rem;
+  margin: 2rem 0;
+}
+
+.btn-historial,
+.btn-estadisticas {
+  padding: 0.8rem 1.5rem;
+  background: #1976d2;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.btn-historial:hover,
+.btn-estadisticas:hover {
+  background: #1565c0;
+}
+
+
     :host {
       display: block;
       min-height: 100vh;
@@ -548,12 +571,12 @@ export class HomeComponent implements OnInit, OnDestroy {
   generandoRutina: boolean = false;
   errorGeneracion: string | null = null;
   rutinaEstructurada: any[] = [];
-  completedDays: { [key: string]: boolean } = {};
   currentUserUid: string | null = null;
   mostrarFormulario: boolean = false;
   userData: any = null;
   mostrarMenuUsuario: boolean = false;
   photoURL: string | null = null;
+  esActualizacion: boolean = false;
 
   private userSubscription: Subscription | null = null;
 
@@ -566,58 +589,134 @@ export class HomeComponent implements OnInit, OnDestroy {
   
 
   ngOnInit(): void {
-    this.userSubscription = this.authService.user$.subscribe(async (user: User | null) => {
+    console.log('ngOnInit: Iniciando suscripción a user$');
+    this.authService.user$.subscribe(async (user) => {
+      console.log('ngOnInit: user$ emitido, user:', !!user);
+      // Iniciamos asumiendo que generaremos o cargaremos, por eso mostramos carga
+      this.generandoRutina = true;
+      this.rutinaEstructurada = [];
+      this.rutina = null;
+      this.errorGeneracion = null;
+      this.formularioCompletado = false; // Asumir incompleto hasta verificar
+      console.log('ngOnInit: Estado inicial - generandoRutina:', this.generandoRutina, 'formularioCompletado:', this.formularioCompletado);
+
       if (user) {
-        this.currentUserUid = user.uid;
-        console.log('Usuario autenticado:', this.currentUserUid);
+        console.log('ngOnInit: Usuario autenticado:', user.uid);
         try {
-          this.userData = await this.obtenerDatosUsuario(user.uid);
-          console.log('Datos del usuario desde Firestore:', this.userData);
+          const userDocRef = doc(this.firestore, 'usuarios', user.uid);
+          console.log('ngOnInit: Intentando obtener datos del usuario de Firestore...');
+          const userDoc = await getDoc(userDocRef);
+          
+          if (userDoc.exists()) {
+            this.userData = userDoc.data();
+            console.log('ngOnInit: Datos del usuario cargados:', this.userData);
+            
+            // Determinar si el formulario está completado (verificando campos clave)
+            this.formularioCompletado = !!(this.userData && 
+                                      this.userData.nombre && 
+                                      this.userData.edad && 
+                                      this.userData.objetivo); // Puedes añadir más campos si es necesario
+            console.log('ngOnInit: Formulario completado evaluado a:', this.formularioCompletado);
 
-          this.photoURL = this.userData?.photoURL || null;
-          console.log('PhotoURL del usuario:', this.photoURL);
-
-          if (this.userData?.nombre && this.userData?.apellido) {
-            this.displayName = `${this.userData.nombre} ${this.userData.apellido}`;
-          } else if (user.displayName) {
-            this.displayName = user.displayName;
-          } else {
-            this.displayName = user.email || 'Usuario';
-          }
-
-          this.formularioCompletado = !!(this.userData?.edad && this.userData?.altura && this.userData?.peso && this.userData?.sexo && this.userData?.nivel);
-          console.log('Formulario completado:', this.formularioCompletado, 'Datos:', this.userData);
-
-          this.completedDays = this.userData?.completedDays || {};
-
-          this.rutina = this.userData?.rutina || null;
-          this.rutinaEstructurada = [];
-          if (this.rutina) {
-            if (typeof this.rutina === 'object') {
-              this.rutinaEstructurada = (this.rutina as any).rutina_semanal || this.rutina;
+            // Si el formulario está completado y hay rutina guardada, cargarla
+            if (this.formularioCompletado && this.userData.rutina) {
+              console.log('ngOnInit: Formulario completado y rutina existente encontrada. Cargando rutina existente...');
+              this.rutina = this.userData.rutina;
+              this.rutinaEstructurada = this.estructurarRutina(this.rutina);
+              console.log('ngOnInit: Rutina existente estructurada. rutinaEstructurada.length:', this.rutinaEstructurada.length);
+              // No desactivamos generandoRutina aquí, se hará al final del subscribe
+            } else if (this.formularioCompletado && !this.userData.rutina) {
+              // Si el formulario está completado pero no hay rutina, generarla por primera vez
+              console.log('ngOnInit: Formulario completado pero no hay rutina, generando nueva...');
+              await this.generarRutina(this.userData);
+              // generarRutina ya establece generandoRutina a false
             } else {
-              try {
-                const rutinaObj = JSON.parse(this.rutina);
-                this.rutinaEstructurada = (rutinaObj as any).rutina_semanal || rutinaObj;
-              } catch {
-                this.rutinaEstructurada = [];
-              }
+              // Si el formulario no está completado, asegurar que la rutina no se muestre
+              console.log('ngOnInit: Formulario incompleto o datos insuficientes.');
+              this.rutinaEstructurada = [];
+              this.rutina = null;
+              // No desactivamos generandoRutina aquí, se hará al final del subscribe
             }
-          }
 
-          if (!this.rutina && this.formularioCompletado) {
-            await this.generarRutina();
+          } else {
+            console.log('ngOnInit: No se encontraron datos del usuario en Firestore.');
+            this.formularioCompletado = false;
+            this.rutinaEstructurada = [];
+            this.rutina = null;
+            // No desactivamos generandoRutina aquí, se hará al final del subscribe
           }
-
         } catch (error) {
-          console.error('Error al obtener datos del usuario:', error);
-          this.displayName = user.email || 'Usuario';
+          console.error('ngOnInit: Error al cargar datos del usuario:', error);
+          this.formularioCompletado = false;
+          this.rutinaEstructurada = [];
+          this.rutina = null;
+          this.errorGeneracion = 'Error al cargar datos del usuario.';
+          // No desactivamos generandoRutina aquí, se hará al final del subscribe
+        } finally {
+           // Asegurarse de que el indicador de carga se oculte después de procesar
+           // Esto cubre los casos donde no se llama a generarRutina directamente
+           if (this.generandoRutina) { // Solo si no se desactivó ya en generarRutina
+              this.generandoRutina = false;
+              console.log('ngOnInit: finally - generandoRutina establecido a false.');
+           }
         }
+
       } else {
-        this.currentUserUid = null;
-        console.log('No hay usuario autenticado');
-        this.displayName = 'Usuario';
-        this.photoURL = null;
+        console.log('ngOnInit: No hay usuario autenticado.');
+        this.formularioCompletado = false;
+        this.rutinaEstructurada = [];
+        this.rutina = null;
+        this.generandoRutina = false; // Ocultar indicador si no hay usuario
+        console.log('ngOnInit: No autenticado - generandoRutina establecido a false.');
+      }
+      console.log('ngOnInit: Fin del user$ subscribe. generandoRutina:', this.generandoRutina, 'formularioCompletado:', this.formularioCompletado, 'rutinaEstructurada.length:', this.rutinaEstructurada.length);
+
+    });
+
+    // Suscribirse a las actualizaciones del formulario
+    this.authService.formularioActualizado$.subscribe(async (datos) => {
+      console.log('HomeComponent: Suscripción a formularioActualizado$ activada con datos:', datos);
+      if (datos) {
+        console.log('onFormularioActualizado: Datos del formulario actualizados (desde servicio):', datos);
+        // Actualizar userData localmente
+        this.userData = { ...this.userData, ...datos };
+        console.log('onFormularioActualizado: userData actualizado localmente:', this.userData);
+        
+        // Marcar formulario como completado si los datos son válidos
+        this.formularioCompletado = !!(this.userData && 
+                                    this.userData.nombre && 
+                                    this.userData.edad && 
+                                    this.userData.objetivo); // Ajusta según los campos de validación
+        console.log('onFormularioActualizado: Formulario completado evaluado a:', this.formularioCompletado);
+
+        // Si el formulario está completado, generar una nueva rutina con los datos actualizados
+        if (this.formularioCompletado) {
+           console.log('onFormularioActualizado: Formulario actualizado y completado, iniciando generación de nueva rutina...');
+           console.log('onFormularioActualizado: Estableciendo generandoRutina = true');
+           this.generandoRutina = true; // Mostrar indicador de carga al iniciar la generación
+           this.rutinaEstructurada = []; // Limpiar rutina anterior visualmente
+           this.rutina = null; // Limpiar rutina anterior
+           this.errorGeneracion = null; // Limpiar error previo
+           
+           // Cerrar el modal del formulario *antes* o *al inicio* de generar la rutina
+           this.mostrarFormulario = false;
+           console.log('onFormularioActualizado: Modal cerrado antes de generar rutina.');
+
+           await this.generarRutina(this.userData);
+           console.log('onFormularioActualizado: Finalizada llamada a generarRutina.');
+           // generarRutina ya establece generandoRutina a false
+
+        } else {
+           console.log('onFormularioActualizado: Formulario actualizado pero incompleto.');
+           this.rutinaEstructurada = [];
+           this.rutina = null;
+           console.log('onFormularioActualizado: Estableciendo generandoRutina = false por formulario incompleto.');
+           this.generandoRutina = false; // Ocultar indicador si el formulario está incompleto
+           this.errorGeneracion = null;
+           console.log('onFormularioActualizado: Modal cerrado por formulario incompleto.');
+           // Cerrar el modal si el formulario no está completado pero se guardó algo
+           this.mostrarFormulario = false;
+        }
       }
     });
   }
@@ -628,60 +727,55 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
   }
 
-  async generarRutina() {
-    if (!this.userData) return;
-    
-    try {
-      console.log('Iniciando generación de rutina...');
-      this.generandoRutina = true;
-      this.errorGeneracion = null;
-      
-      const rutinaGenerada = await this.geminiService.generarRutina(this.userData);
-      console.log('Rutina generada exitosamente');
-      
-      this.rutina = rutinaGenerada;
-      if (typeof rutinaGenerada === 'object') {
-        this.rutinaEstructurada = (rutinaGenerada as any).rutina_semanal || rutinaGenerada;
-      } else {
-        try {
-          const rutinaObj = JSON.parse(rutinaGenerada);
-          this.rutinaEstructurada = (rutinaObj as any).rutina_semanal || rutinaObj;
-        } catch {
-          this.rutinaEstructurada = [];
-        }
-      }
-      
-      if (this.currentUserUid) {
-        const userDocRef = doc(this.firestore, 'usuarios', this.currentUserUid);
-        await updateDoc(userDocRef, 'rutina', rutinaGenerada);
-        console.log('Rutina guardada en Firestore');
-      }
-      
+  async generarRutina(datosUsuario: any) {
+    console.log('Iniciando generación de rutina...');
+    console.log('generarRutina: Estableciendo generandoRutina = true');
+    this.generandoRutina = true; // Mostrar indicador de carga
+    this.errorGeneracion = null; // Limpiar errores anteriores
+    this.rutinaEstructurada = []; // Limpiar rutina anterior visualmente
+    this.rutina = null; // Limpiar rutina anterior
+
+    const user = await this.authService.getCurrentUser();
+    if (!user) {
+      console.error('No hay usuario autenticado para generar rutina');
+      console.log('generarRutina: Estableciendo generandoRutina = false por falta de usuario.');
       this.generandoRutina = false;
-    } catch (error) {
-      console.error('Error generando rutina:', error);
-      this.errorGeneracion = 'Hubo un error al generar la rutina. Por favor, intenta nuevamente.';
-      this.generandoRutina = false;
+      this.errorGeneracion = 'No se pudo autenticar el usuario.';
+      return;
     }
-  }
 
-  async onFormularioActualizado(datosActualizados: any) {
-    if (!this.currentUserUid) return;
+    console.log('Datos de usuario para generar rutina:', datosUsuario);
 
     try {
-      const userDocRef = doc(this.firestore, 'usuarios', this.currentUserUid);
-      await updateDoc(userDocRef, datosActualizados, { merge: true });
-      
-      this.userData = { ...this.userData, ...datosActualizados };
-      this.formularioCompletado = true;
-      this.mostrarFormulario = false;
-      
-      if (this.formularioCompletado) {
-        await this.generarRutina();
+      const rutinaGenerada = await this.geminiService.generarRutina(datosUsuario);
+      console.log('Respuesta de GeminiService:', rutinaGenerada);
+
+      if (rutinaGenerada) {
+        this.rutina = rutinaGenerada; // Guardar la rutina cruda si es necesario
+        this.rutinaEstructurada = this.estructurarRutina(rutinaGenerada);
+        console.log('Rutina estructurada:', this.rutinaEstructurada);
+
+        // Guardar la rutina en Firestore
+        const userDocRef = doc(this.firestore, 'usuarios', user.uid);
+        await updateDoc(userDocRef, { rutina: this.rutina });
+        console.log('Rutina guardada en Firestore.');
+
+        console.log('generarRutina: Estableciendo generandoRutina = false tras éxito.');
+        this.generandoRutina = false; // Ocultar indicador SÓLO si fue exitoso
+
+      } else {
+        console.error('GeminiService no devolvió una rutina válida');
+        this.errorGeneracion = 'Error al generar la rutina. Inténtalo de nuevo.';
+        console.log('generarRutina: Estableciendo generandoRutina = false tras respuesta inválida.');
+        this.generandoRutina = false; // Ocultar indicador también en caso de respuesta inválida
       }
 
-    } catch (error) {
-      console.error('Error al actualizar los datos:', error);
+    } catch (error: any) {
+      console.error('Error al generar la rutina:', error);
+      // Intenta extraer un mensaje de error útil
+      this.errorGeneracion = `Error al generar la rutina: ${error.message || error}. Por favor, intenta de nuevo.`;
+      console.log('generarRutina: Estableciendo generandoRutina = false tras error.');
+      this.generandoRutina = false; // Ocultar indicador en caso de error
     }
   }
 
@@ -724,13 +818,11 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.generandoRutina = false;
       this.errorGeneracion = null;
       this.rutinaEstructurada = [];
-      this.completedDays = {};
       this.currentUserUid = null;
       this.mostrarFormulario = false;
       this.userData = null;
       this.mostrarMenuUsuario = false;
       this.photoURL = null;
-
     }).catch(error => {
       console.error('Error al cerrar sesión:', error);
     });
@@ -746,26 +838,100 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
   }
 
-  async updateCompletedDays(updatedDays: { [key: string]: boolean }): Promise<void> {
-    this.completedDays = updatedDays;
-    if (this.currentUserUid) {
-      const userDocRef = doc(this.firestore, 'usuarios', this.currentUserUid);
-      try {
-        await updateDoc(userDocRef, 'completedDays', this.completedDays);
-        console.log('Días completados guardados en Firestore');
-      } catch (error) {
-        console.error('Error al guardar días completados:', error);
+  verFormulario() {
+    this.router.navigate(['/formulario']);
+  }
+
+  comenzarRutina(dia: any) {
+    this.router.navigate(['/ejecucion'], {
+      state: { dia }
+    });
+  }
+
+  private estructurarRutina(rutina: any): any[] {
+    console.log('Estructurando rutina, datos recibidos:', rutina);
+    try {
+      let rutinaProcesada;
+      
+      if (typeof rutina === 'string') {
+        console.log('La rutina es un string, intentando parsear JSON');
+        try {
+          rutinaProcesada = JSON.parse(rutina);
+        } catch (e) {
+          console.error('Error al parsear JSON:', e);
+          return [];
+        }
+      } else {
+        rutinaProcesada = rutina;
+      }
+
+      console.log('Rutina procesada:', rutinaProcesada);
+
+      if (rutinaProcesada.rutina_semanal) {
+        console.log('Encontrada rutina_semanal en la respuesta');
+        return rutinaProcesada.rutina_semanal;
+      } else if (Array.isArray(rutinaProcesada)) {
+        console.log('La rutina es un array');
+        return rutinaProcesada;
+      } else {
+        console.log('Formato de rutina no reconocido');
+        return [];
+      }
+    } catch (error) {
+      console.error('Error al estructurar la rutina:', error);
+      return [];
+    }
+  }
+
+  async onFormularioActualizado(datosActualizados: any) {
+    console.log('onFormularioActualizado: Datos del formulario actualizados (desde servicio):', datosActualizados);
+    if (datosActualizados) {
+      // Actualizar userData localmente
+      this.userData = { ...this.userData, ...datosActualizados };
+      console.log('onFormularioActualizado: userData actualizado localmente:', this.userData);
+      
+      // Marcar formulario como completado si los datos son válidos
+      this.formularioCompletado = !!(this.userData && 
+                                    this.userData.nombre && 
+                                    this.userData.edad && 
+                                    this.userData.objetivo); // Ajusta según los campos de validación
+      console.log('onFormularioActualizado: Formulario completado evaluado a:', this.formularioCompletado);
+
+      // Si el formulario está completado, generar una nueva rutina con los datos actualizados
+      if (this.formularioCompletado) {
+         console.log('onFormularioActualizado: Formulario actualizado y completado, iniciando generación de nueva rutina...');
+         // No establecer generandoRutina = true aquí, generarRutina lo hará
+         this.rutinaEstructurada = []; // Limpiar rutina anterior visualmente inmediatamente
+         this.rutina = null; // Limpiar rutina anterior inmediatamente
+         this.errorGeneracion = null; // Limpiar error previo
+         
+         // Cerrar el modal del formulario *antes* o *al inicio* de generar la rutina
+         this.mostrarFormulario = false;
+         console.log('onFormularioActualizado: Modal cerrado antes de generar rutina.');
+
+         // Pasar los datos actualizados a generarRutina
+         await this.generarRutina(this.userData);
+         console.log('onFormularioActualizado: Finalizada llamada a generarRutina.');
+         // generarRutina ya establece generandoRutina a false
+
+      } else {
+         console.log('onFormularioActualizado: Formulario actualizado pero incompleto.');
+         this.rutinaEstructurada = [];
+         this.rutina = null;
+         this.generandoRutina = false; // Ocultar indicador si el formulario está incompleto
+         this.errorGeneracion = null;
+         console.log('onFormularioActualizado: generatingRutina establecido a false por formulario incompleto.');
+
+         // Cerrar el modal si el formulario no está completado pero se guardó algo
+         this.mostrarFormulario = false;
+         console.log('onFormularioActualizado: Modal cerrado por formulario incompleto.');
       }
     }
   }
 
-  async toggleDiaCompletado(dia: string) {
-    const updatedDays = { ...this.completedDays };
-    updatedDays[dia] = !updatedDays[dia];
-    await this.updateCompletedDays(updatedDays);
-  }
-
-  verFormulario() {
-    this.router.navigate(['/formulario']);
+  // Método placeholder para manejar el marcado de días como completados
+  marcarDiaCompletado(dia: any) {
+    console.log('Día marcado/desmarcado como completado:', dia);
+    // Aquí iría la lógica para actualizar el estado de completado (localmente o en Firestore)
   }
 }

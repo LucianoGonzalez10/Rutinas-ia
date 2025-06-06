@@ -1,92 +1,236 @@
-<form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="register-form">
-  <div class="form-group">
-    <input formControlName="nombre" placeholder="Nombre" required [disabled]="isLoading">
-    <div *ngIf="registerForm.get('nombre')?.invalid && registerForm.get('nombre')?.touched" class="error-message">
-      El nombre es requerido
+<div class="register-container">
+  <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="register-form">
+    <h2>Registro</h2>
+    <div class="form-group">
+      <input formControlName="nombre" placeholder="Nombre" required [disabled]="isLoading">
+      <div *ngIf="registerForm.get('nombre')?.invalid && registerForm.get('nombre')?.touched" class="error-message">
+        El nombre es requerido
+      </div>
     </div>
-  </div>
 
-  <div class="form-group">
-    <input formControlName="apellido" placeholder="Apellido" required [disabled]="isLoading">
-    <div *ngIf="registerForm.get('apellido')?.invalid && registerForm.get('apellido')?.touched" class="error-message">
-      El apellido es requerido
+    <div class="form-group">
+      <input formControlName="apellido" placeholder="Apellido" required [disabled]="isLoading">
+      <div *ngIf="registerForm.get('apellido')?.invalid && registerForm.get('apellido')?.touched" class="error-message">
+        El apellido es requerido
+      </div>
     </div>
-  </div>
 
-  <div class="form-group">
-    <input formControlName="email" placeholder="Email" required type="email" [disabled]="isLoading">
-    <div *ngIf="registerForm.get('email')?.invalid && registerForm.get('email')?.touched" class="error-message">
-      Ingrese un email válido
+    <div class="form-group">
+      <input formControlName="email" placeholder="Email" required type="email" [disabled]="isLoading">
+      <div *ngIf="registerForm.get('email')?.invalid && registerForm.get('email')?.touched" class="error-message">
+        Ingrese un email válido
+      </div>
     </div>
-  </div>
 
-  <div class="form-group">
-    <input formControlName="password" placeholder="Contraseña" required type="password" [disabled]="isLoading">
-    <div *ngIf="registerForm.get('password')?.invalid && registerForm.get('password')?.touched" class="error-message">
-      La contraseña debe tener al menos 6 caracteres
+    <div class="form-group">
+      <input formControlName="password" placeholder="Contraseña" required type="password" [disabled]="isLoading">
+      <div *ngIf="registerForm.get('password')?.invalid && registerForm.get('password')?.touched" class="error-message">
+        La contraseña debe tener al menos 8 caracteres y una mayúscula.
+      </div>
     </div>
-  </div>
 
-  <div class="form-group">
-    <label for="confirmarPassword">Confirmar Contraseña</label>
-    <input type="password" id="confirmarPassword" formControlName="confirmarPassword" required>
-  </div>
+    <div class="form-group">
+      <label for="confirmarPassword">Confirmar Contraseña</label>
+      <input type="password" id="confirmarPassword" formControlName="confirmarPassword" required [disabled]="isLoading">
+    </div>
 
-  <div *ngIf="passwordMismatch" class="error-message">
-    Las contraseñas no coinciden
-  </div>
+    <div *ngIf="passwordMismatch" class="error-message">
+      {{ passwordMismatch ? 'Las contraseñas no coinciden' : '' }}
+    </div>
 
-  <button type="submit" [disabled]="registerForm.invalid || isLoading">
-    {{ isLoading ? 'Registrando...' : 'Registrarse' }}
-  </button>
+    <div *ngIf="errorMessage" class="error-message">
+      {{ errorMessage }}
+    </div>
+    
+    <div class="form-group-checkbox">
+      <div class="checkbox-label-container">
+        <input type="checkbox" formControlName="aceptaTerminos">
+        <label>
+          Acepto los <a (click)="navigateToTerms($event)" href="/terminos-politicas" target="_blank">Términos y Políticas</a>
+        </label>
+      </div>
+      <div *ngIf="registerForm.get('aceptaTerminos')?.invalid && registerForm.get('aceptaTerminos')?.touched" class="error-message">
+        Debes aceptar los términos y políticas
+      </div>
+    </div>
 
-  <div *ngIf="errorMessage" class="error-message">
-    {{ errorMessage }}
-  </div>
-</form>
+    <button type="submit" [disabled]="registerForm.invalid || isLoading || isSubmitting">
+      {{ isSubmitting ? 'Registrando...' : 'Registrarse' }}
+    </button>
+
+    <p>¿Ya tienes una cuenta? <a routerLink="/login">Inicia Sesión</a></p>
+  </form>
+</div>
 
 <style>
+.register-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  /* Fondo oscuro similar al home */
+  background: linear-gradient(135deg, #1e2a3a 0%, #2c3e50 100%);
+  padding: 2rem; /* Añadir padding para espacios en pantallas pequeñas */
+  box-sizing: border-box; /* Asegurar que el padding no afecte el tamaño */
+}
+
 .register-form {
+  /* Fondo oscuro translúcido para el formulario */
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2.5rem;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); /* Sombra más pronunciada */
+  width: 100%;
   max-width: 400px;
-  margin: 0 auto;
-  padding: 20px;
+  backdrop-filter: blur(10px); /* Efecto de desenfoque */
+  border: 1px solid rgba(255, 255, 255, 0.1); /* Borde sutil */
+  text-align: center; /* Centrar contenido del formulario */
 }
 
 .form-group {
-  margin-bottom: 15px;
+  margin-bottom: 1.5rem; /* Aumentar espacio entre grupos */
+  text-align: left; /* Alinear etiquetas e inputs a la izquierda */
+}
+
+label {
+    display: block; /* Asegurar que la etiqueta esté en su propia línea */
+    margin-bottom: 0.5rem; /* Espacio entre etiqueta e input */
+    color: #b0b0b0; /* Color de texto gris claro */
+    font-size: 0.9rem;
 }
 
 input {
   width: 100%;
-  padding: 8px;
-  margin-bottom: 5px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  padding: 1rem; /* Aumentar padding */
+  border: 1px solid rgba(100, 181, 246, 0.3); /* Borde con color de acento y transparencia */
+  border-radius: 8px; /* Bordes más redondeados */
+  font-size: 1.1rem; /* Aumentar tamaño de fuente */
+  background-color: rgba(0, 0, 0, 0.2); /* Fondo oscuro para inputs */
+  color: #e0e0e0; /* Color de texto claro */
+  outline: none; /* Remover outline por defecto */
+  transition: border-color 0.3s ease, box-shadow 0.3s ease; /* Transición suave */
+  box-sizing: border-box; /* Incluir padding y borde en el ancho */
+}
+
+input::placeholder {
+  color: rgba(224, 224, 224, 0.6); /* Color de placeholder más sutil */
+}
+
+input:focus {
+  border-color: #64b5f6; /* Color de borde al enfocar */
+  box-shadow: 0 0 8px rgba(100, 181, 246, 0.5); /* Sombra al enfocar */
 }
 
 input:disabled {
-  background-color: #f5f5f5;
+  background-color: rgba(0, 0, 0, 0.1); /* Fondo más sutil para disabled */
   cursor: not-allowed;
+  color: rgba(224, 224, 224, 0.4);
+  border-color: rgba(100, 181, 246, 0.1);
 }
 
 button {
   width: 100%;
-  padding: 10px;
-  background-color: #007bff;
+  padding: 1rem;
+  background: linear-gradient(135deg, #64b5f6 0%, #1976d2 100%); /* Gradiente azul */
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px; /* Bordes redondeados */
+  font-size: 1.1rem;
   cursor: pointer;
+  margin-top: 1.5rem; /* Aumentar espacio superior */
+  transition: background-color 0.3s ease, transform 0.2s ease; /* Transiciones */
+  font-weight: 600; /* Texto en negrita */
+  text-transform: uppercase; /* Texto en mayúsculas */
+  letter-spacing: 0.5px; /* Espaciado entre letras */
+  box-shadow: 0 4px 15px rgba(100, 181, 246, 0.3);
+}
+
+button:hover:not(:disabled) { /* Aplicar hover solo si no está deshabilitado */
+  background: linear-gradient(135deg, #1976d2 0%, #64b5f6 100%);
+  transform: translateY(-2px); /* Efecto hover */
+  box-shadow: 0 6px 20px rgba(100, 181, 246, 0.4);
 }
 
 button:disabled {
-  background-color: #cccccc;
+  background-color: rgba(100, 181, 246, 0.3); /* Fondo tenue para disabled */
   cursor: not-allowed;
+  box-shadow: none;
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 2rem; /* Aumentar espacio */
+  color: #64b5f6; /* Color de acento para títulos */
+  font-size: 2rem; /* Tamaño de fuente más grande */
+  text-shadow: 0 2px 8px rgba(100, 181, 246, 0.2); /* Sombra de texto */
+}
+
+p {
+  text-align: center;
+  margin-top: 1.5rem; /* Aumentar espacio */
+  color: #b0b0b0; /* Color de texto gris claro */
+  font-size: 1rem;
+}
+
+a {
+  color: #64b5f6; /* Color de acento para enlaces */
+  text-decoration: none;
+  font-weight: 600;
+}
+
+a:hover {
+  text-decoration: underline;
+  color: #82b1ff; /* Color de acento más claro al hover */
 }
 
 .error-message {
-  color: #dc3545;
+  color: #ff6b6b; /* Color rojo para errores */
   font-size: 0.9em;
-  margin-top: 5px;
+  margin-top: 0.5rem; /* Espacio superior */
+  text-align: center; /* Centrar mensaje de error */
+  width: 100%; /* Asegurar que tome el ancho completo */
+}
+
+.form-group-checkbox {
+  margin-top: 1.5rem; /* Espacio superior */
+  margin-bottom: 1.5rem; /* Espacio inferior */
+  text-align: center; /* Centrar contenido */
+  /*display: flex; /* Usar flexbox para alinear checkbox y label */
+  align-items: center; /* Alinear verticalmente */
+  justify-content: center; /* Centrar horizontalmente */
+  flex-direction: column; /* Apilar elementos verticalmente */
+}
+
+.checkbox-label-container {
+    display: flex; /* Alinear checkbox y label en una fila */
+    align-items: center; /* Alinear verticalmente */
+    justify-content: center; /* Centrar horizontalmente si es necesario */
+    margin-bottom: 0.5rem; /* Espacio entre el checkbox/label y el mensaje de error */
+    width: 100%; /* Asegurar que tome el ancho completo para centrado */
+}
+
+.form-group-checkbox input[type="checkbox"] {
+  width: auto; /* Ancho automático para el checkbox */
+  margin-right: 0.5rem; /* Espacio entre checkbox y label */
+  flex-shrink: 0; /* Evitar que el checkbox se achique */
+}
+
+.form-group-checkbox label {
+  margin-bottom: 0; /* Eliminar margen inferior por defecto */
+  color: #b0b0b0; /* Color de texto gris claro */
+  font-size: 1rem;
+  text-align: left; /* Alinear texto de la etiqueta a la izquierda */
+  flex-grow: 1; /* Permitir que la etiqueta ocupe espacio disponible */
+}
+
+.form-group-checkbox a {
+    color: #64b5f6; /* Color de acento para el enlace */
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.form-group-checkbox a:hover {
+    text-decoration: underline;
+    color: #82b1ff; /* Color de acento más claro al hover */
 }
 </style>

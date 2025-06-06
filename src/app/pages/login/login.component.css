@@ -3,62 +3,112 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background-color: #f5f5f5;
+  /* Fondo oscuro similar al home */
+  background: linear-gradient(135deg, #1e2a3a 0%, #2c3e50 100%);
+  padding: 2rem; /* Añadir padding para espacios en pantallas pequeñas */
+  box-sizing: border-box; /* Asegurar que el padding no afecte el tamaño */
 }
 
 .login-form {
-  background: white;
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  /* Fondo oscuro translúcido para el formulario */
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2.5rem;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); /* Sombra más pronunciada */
   width: 100%;
   max-width: 400px;
+  backdrop-filter: blur(10px); /* Efecto de desenfoque */
+  border: 1px solid rgba(255, 255, 255, 0.1); /* Borde sutil */
 }
 
 .form-group {
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem; /* Aumentar espacio entre grupos */
 }
 
 input {
   width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 1rem;
+  padding: 1rem; /* Aumentar padding */
+  border: 1px solid rgba(100, 181, 246, 0.3); /* Borde con color de acento y transparencia */
+  border-radius: 8px; /* Bordes más redondeados */
+  font-size: 1.1rem; /* Aumentar tamaño de fuente */
+  background-color: rgba(0, 0, 0, 0.2); /* Fondo oscuro para inputs */
+  color: #e0e0e0; /* Color de texto claro */
+  outline: none; /* Remover outline por defecto */
+  transition: border-color 0.3s ease, box-shadow 0.3s ease; /* Transición suave */
 }
 
+input::placeholder {
+  color: rgba(224, 224, 224, 0.6); /* Color de placeholder más sutil */
+}
+
+input:focus {
+  border-color: #64b5f6; /* Color de borde al enfocar */
+  box-shadow: 0 0 8px rgba(100, 181, 246, 0.5); /* Sombra al enfocar */
+}
+
+/* Estilos para ambos botones */
 button {
   width: 100%;
-  padding: 0.75rem;
-  background-color: #007bff;
-  color: white;
+  padding: 1rem;
   border: none;
-  border-radius: 4px;
-  font-size: 1rem;
+  border-radius: 8px; /* Bordes redondeados */
+  font-size: 1.1rem;
   cursor: pointer;
   margin-top: 1rem;
+  transition: background-color 0.3s ease, transform 0.2s ease; /* Transiciones */
+  font-weight: 600; /* Texto en negrita */
+  text-transform: uppercase; /* Texto en mayúsculas */
+  letter-spacing: 0.5px; /* Espaciado entre letras */
 }
 
-button:hover {
-  background-color: #0056b3;
+/* Estilo específico para el botón de Iniciar Sesión */
+button[type="submit"] {
+  background: linear-gradient(135deg, #64b5f6 0%, #1976d2 100%); /* Gradiente azul */
+  color: white;
+  box-shadow: 0 4px 15px rgba(100, 181, 246, 0.3);
+}
+
+button[type="submit"]:hover {
+  background: linear-gradient(135deg, #1976d2 0%, #64b5f6 100%);
+  transform: translateY(-2px); /* Efecto hover */
+  box-shadow: 0 6px 20px rgba(100, 181, 246, 0.4);
+}
+
+/* Estilo específico para el botón de Google */
+button:not([type="submit"]) {
+  background-color: #4285F4; /* Color de Google */
+  color: white;
+  box-shadow: 0 4px 15px rgba(66, 133, 244, 0.3);
+}
+
+button:not([type="submit"]):hover {
+    background-color: #357ae8; /* Color de Google hover */
+    transform: translateY(-2px); /* Efecto hover */
+    box-shadow: 0 6px 20px rgba(66, 133, 244, 0.4);
 }
 
 h2 {
   text-align: center;
-  margin-bottom: 1.5rem;
-  color: #333;
+  margin-bottom: 2rem; /* Aumentar espacio */
+  color: #64b5f6; /* Color de acento para títulos */
+  font-size: 2rem; /* Tamaño de fuente más grande */
+  text-shadow: 0 2px 8px rgba(100, 181, 246, 0.2); /* Sombra de texto */
 }
 
 p {
   text-align: center;
-  margin-top: 1rem;
+  margin-top: 1.5rem; /* Aumentar espacio */
+  color: #b0b0b0; /* Color de texto gris claro */
+  font-size: 1rem;
 }
 
 a {
-  color: #007bff;
+  color: #64b5f6; /* Color de acento para enlaces */
   text-decoration: none;
+  font-weight: 600;
 }
 
 a:hover {
   text-decoration: underline;
+  color: #82b1ff; /* Color de acento más claro al hover */
 }

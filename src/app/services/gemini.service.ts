@@ -13,30 +13,28 @@ export class GeminiService {
   }
 
   async generarRutina(datosUsuario: any): Promise<any> {
+    console.log('Generando rutina con datos:', datosUsuario);
     const prompt = `
     Soy un entrenador personal. Basándome en estos datos:
     - Edad: ${datosUsuario.edad}
-    - Sexo: ${datosUsuario.sexo}
+    - Sexo: ${datosUsuario.genero}
     - Peso: ${datosUsuario.peso} kg
     - Altura: ${datosUsuario.altura} cm
-    - Nivel: ${datosUsuario.nivel}
+    - Nivel: ${datosUsuario.nivelActividad}
     - Enfermedades o condiciones médicas: ${datosUsuario.enfermedades || 'ninguna'}
-    - Frecuencia semanal de entrenamiento: ${datosUsuario.frecuencia} días
+    - Frecuencia semanal de entrenamiento: ${datosUsuario.diasEntrenamiento} días
     - Objetivo principal: ${datosUsuario.objetivo}
-    - Restricciones físicas o lesiones: ${datosUsuario.restricciones || 'ninguna'}
+    - Restricciones físicas o lesiones: ${datosUsuario.lesiones || 'ninguna'}
     - Ubicación de entrenamiento: ${datosUsuario.ubicacion}
-    - Equipamiento disponible: ${(datosUsuario.equipamiento && datosUsuario.equipamiento.length > 0) ? datosUsuario.equipamiento.join(', ') : 'ninguno'}
+    - Equipamiento disponible: ${datosUsuario.equipamiento || 'ninguno'}
 
     Crea una rutina semanal personalizada con enfoque en salud, fuerza y bienestar general. Sé claro, breve y adecuado para su nivel, enfermedades, restricciones y equipamiento.
     
     ${datosUsuario.ubicacion === 'Casa' ? 'Prioriza ejercicios que se puedan realizar en casa con el equipamiento disponible.' : 'Incluye ejercicios que aprovechen el equipamiento del gimnasio.'}
 
-    Devuélveme la rutina en formato JSON, con un array de días. Cada día debe tener:
-    - dia: nombre del día (ej: "Lunes")
-    - enfoque: el enfoque principal del entrenamiento (ej: "Fuerza superior", "Cardio", "Piernas", etc.)
-    - ejercicios: array de ejercicios con nombre, series, repeticiones, descanso y notas si son necesarias.
+    IMPORTANTE: La rutina debe tener exactamente ${datosUsuario.diasEntrenamiento} días de entrenamiento por semana.
 
-    Ejemplo de formato:
+    IMPORTANTE: Devuelve SOLO el JSON, sin ningún texto adicional antes o después. El JSON debe tener este formato exacto:
     {
       "rutina_semanal": [
         {
@@ -56,18 +54,41 @@ export class GeminiService {
     }
     `;
 
+    console.log('Enviando prompt a Gemini:', prompt);
     const model = this.genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
     const result = await model.generateContent(prompt);
     const response = await result.response;
-    let rutinaLimpia = response.text()
-      .replace(/```json|```/g, '')
-      .replace(/^[^{]*({.*})[^}]*$/s, '$1');
-    let rutinaJson = {};
+    const responseText = response.text();
+    console.log('Respuesta raw de Gemini:', responseText);
+    
+    // Limpiar la respuesta
+    let rutinaLimpia = responseText
+      .replace(/```json|```/g, '') // Eliminar marcadores de código
+      .replace(/^[\s\S]*?({[\s\S]*})[\s\S]*$/, '$1') // Extraer solo el JSON
+      .trim(); // Eliminar espacios en blanco
+    
+    console.log('Rutina limpia:', rutinaLimpia);
+    
     try {
-      rutinaJson = JSON.parse(rutinaLimpia);
-    } catch (e) {
-      // Manejar error de parseo
+      // Intentar parsear el JSON
+      const rutinaJson = JSON.parse(rutinaLimpia);
+      console.log('Rutina parseada:', rutinaJson);
+
+      // Validar la estructura
+      if (!rutinaJson.rutina_semanal || !Array.isArray(rutinaJson.rutina_semanal)) {
+        throw new Error('La respuesta no tiene el formato esperado');
+      }
+
+      // Validar que tenga el número correcto de días
+      if (rutinaJson.rutina_semanal.length !== datosUsuario.diasEntrenamiento) {
+        throw new Error(`La rutina debe tener ${datosUsuario.diasEntrenamiento} días`);
+      }
+
+      return rutinaJson;
+    } catch (e: any) {
+      console.error('Error al procesar la rutina:', e);
+      console.error('Contenido que causó el error:', rutinaLimpia);
+      throw new Error('Error al procesar la respuesta de la IA: ' + e.message);
     }
-    return rutinaJson; // Devuelve el objeto, no el texto
   }
 }

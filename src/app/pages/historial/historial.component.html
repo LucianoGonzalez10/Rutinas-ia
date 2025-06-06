@@ -1,0 +1,45 @@
+<div class="historial">
+    <h2>Historial de Rutinas</h2>
+  
+    <!-- Mensaje de carga -->
+    <p *ngIf="cargando">Cargando historial...</p>
+  
+    <!-- Lista de ejecuciones -->
+    <div *ngFor="let ejecucion of ejecuciones" class="ejecucion">
+      <div class="ejecucion-header">
+        <h3>{{ ejecucion.dia }}</h3>
+        <p class="enfoque">{{ ejecucion.enfoque }}</p>
+        <p class="fecha">Fecha: {{ ejecucion.fecha.toDate() | date:'short' }}</p>
+      </div>
+  
+      <div class="ejercicios-lista">
+        <div *ngFor="let ej of ejecucion.ejercicios" class="ejercicio">
+          <h4>{{ ej.nombre }}</h4>
+          <div class="series-lista">
+            <div *ngFor="let serie of ej.series; let serieIndex = index" class="serie-detalles">
+              <p>
+                <span class="label">Serie {{ serieIndex + 1 }}:</span> {{ serie.reps }} reps x {{ serie.peso }} kg
+              </p>
+            </div>
+          </div>
+          <p>
+            <span class="label">Repeticiones Objetivo por Serie:</span> {{ ej.repeticionesObjetivo }}
+          </p>
+        </div>
+      </div>
+      <!-- Botón para borrar -->
+      <button class="btn-borrar" (click)="confirmAndDeleteExecution(ejecucion.id)">Borrar del historial</button>
+    </div>
+  
+    <!-- Área de confirmación -->
+    <div *ngIf="mostrarConfirmacion" class="confirmacion-modal">
+      <div class="confirmacion-contenido">
+        <p>¿Estás seguro de que deseas eliminar esta sesión de entrenamiento? Esta acción es irreversible.</p>
+        <div class="confirmacion-botones">
+          <button class="btn-confirmar" (click)="proceedDeletion()">Sí, eliminar</button>
+          <button class="btn-cancelar" (click)="cancelDeletion()">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  

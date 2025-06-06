@@ -1,0 +1,47 @@
+<div class="rutina-ejecucion-container">
+  <h2>Rutina del día: {{ dia?.dia }}</h2>
+  <p><i>{{ dia?.enfoque }}</i></p>
+
+  <form (ngSubmit)="guardarEjecucion()" #form="ngForm">
+    <div *ngFor="let ejercicio of dia?.ejercicios; let i = index">
+      <h4>{{ ejercicio.nombre }}</h4>
+      <p>
+        Objetivo: {{ ejercicio.series }} series de {{ ejercicio.repeticiones }} repeticiones
+      </p>
+
+      <div *ngFor="let serie of ejerciciosRealizados[i]; let j = index">
+        <h5>Serie {{ j + 1 }}</h5>
+
+        <div class="form-group">
+          <label>
+            Peso utilizado (kg):
+            <input 
+              type="number" 
+              [(ngModel)]="ejerciciosRealizados[i][j].peso" 
+              name="peso{{i}}_{{j}}" 
+              required 
+              min="0"
+              step="0.5"
+            />
+          </label>
+        </div>
+
+        <div class="form-group">
+          <label>
+            Repeticiones realizadas:
+            <input 
+              type="number" 
+              [(ngModel)]="ejerciciosRealizados[i][j].reps" 
+              name="reps{{i}}_{{j}}" 
+              required 
+              min="0"
+            />
+          </label>
+        </div>
+      </div>
+      <hr />
+    </div>
+
+    <button type="submit" [disabled]="!form.form.valid">Guardar ejecución</button>
+  </form>
+</div>

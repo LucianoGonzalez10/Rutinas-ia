@@ -13,7 +13,7 @@ import {
   UserCredential
 } from '@angular/fire/auth';
 import { Firestore, doc, setDoc, getDoc, collection } from '@angular/fire/firestore';
-import { from, Observable, switchMap, of } from 'rxjs';
+import { from, Observable, switchMap, of, BehaviorSubject } from 'rxjs';
 import { Router } from '@angular/router';
 
 @Injectable({
@@ -24,10 +24,19 @@ export class AuthService {
   private firestore: Firestore = inject(Firestore);
   private router: Router = inject(Router);
 
-  user$: Observable<User | null>;
+  private userSubject = new BehaviorSubject<User | null>(null);
+  private formularioActualizadoSubject = new BehaviorSubject<any>(null);
+
+  readonly user$ = authState(this.auth);
 
   constructor() {
-    this.user$ = authState(this.auth); // Observador de usuario actual
+    onAuthStateChanged(this.auth, (user) => {
+      this.userSubject.next(user);
+    });
+  }
+
+  get formularioActualizado$(): Observable<any> {
+    return this.formularioActualizadoSubject.asObservable();
   }
 
   // 🔐 Registrar usuario y guardar nombre/apellido
@@ -76,7 +85,7 @@ export class AuthService {
       // Asegurarse de que el usuario esté autenticado y redirigir
       if (this.auth.currentUser) {
         console.log('Usuario autenticado después del registro');
-        // await this.router.navigate(['/home']); // Eliminar redirección aquí
+        await this.router.navigate(['/home']); // Añadida redirección aquí
       } else {
         console.error('Error: Usuario no autenticado después del registro');
         // Dependiendo del flujo, podrías redirigir a login o mostrar un error más grave.
@@ -102,7 +111,8 @@ export class AuthService {
   // 🔓 Iniciar sesión
   async login(email: string, password: string): Promise<UserCredential> {
     try {
-      return await signInWithEmailAndPassword(this.auth, email, password);
+      const result = await signInWithEmailAndPassword(this.auth, email, password);
+      return result;
     } catch (error) {
       throw error;
     }
@@ -131,8 +141,13 @@ export class AuthService {
   }
 
   // 👤 Obtener usuario actual (en un momento puntual)
-  getCurrentUser(): User | null {
-    return this.auth.currentUser;
+  async getCurrentUser(): Promise<User | null> {
+    return new Promise((resolve) => {
+      const unsubscribe = onAuthStateChanged(this.auth, (user) => {
+        unsubscribe();
+        resolve(user);
+      });
+    });
   }
 
   // 📄 Obtener datos del usuario desde Firestore
@@ -192,6 +207,11 @@ export class AuthService {
       console.error(`Error al verificar formulario "${tipo}":`, error);
       return false;
     }
+  }
+
+  notificarFormularioActualizado(datos: any) {
+    console.log('AuthService: notificarFormularioActualizado llamado con datos:', datos);
+    this.formularioActualizadoSubject.next(datos);
   }
 }
 

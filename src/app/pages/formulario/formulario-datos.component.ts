@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -13,6 +13,7 @@ import { AuthService } from '../../services/auth.service';
   styleUrls: ['./formulario-datos.component.css']
 })
 export class FormularioDatosComponent implements OnInit {
+  @Output() formularioActualizado = new EventEmitter<any>();
   nombre: string = '';
   apellido: string = '';
   genero: string = '';
@@ -71,9 +72,12 @@ export class FormularioDatosComponent implements OnInit {
   }
 
   async onSubmit() {
+    console.log('Formulario: Iniciando envío del formulario');
     if (!this.validarFormulario()) {
+      console.log('Formulario: Validación fallida');
       return;
     }
+    console.log('Formulario: Validación exitosa');
 
     const user = await this.authService.getCurrentUser();
     if (!user) {
@@ -105,6 +109,12 @@ export class FormularioDatosComponent implements OnInit {
       const userDocRef = doc(this.firestore, 'usuarios', user.uid);
       await setDoc(userDocRef, datosParaGuardar, { merge: true });
       console.log('Datos guardados exitosamente', datosParaGuardar);
+      
+      // Notificar a través del servicio
+      console.log('FormularioDatosComponent: Notificando formularioActualizado con datos:', datosParaGuardar);
+      this.authService.notificarFormularioActualizado(datosParaGuardar);
+      
+      // Redirigir al home
       this.router.navigate(['/home']);
     } catch (error) {
       console.error('Error al guardar los datos:', error);
